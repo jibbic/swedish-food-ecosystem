@@ -11,7 +11,7 @@ import { Loader2, ArrowRight, CheckCircle, AlertCircle } from 'lucide-react'
 export default function VerksamhetstypDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   
-  const { data: verksamhet, isLoading } = trpc.verksamheter.byId.useQuery({ verksamhetId: id })
+  const { data: verksamhet, isLoading } = trpc.verksamheter.byId.useQuery({ id })
   const { data: uppgiftskrav } = trpc.verksamheter.uppgiftskrav.useQuery({ verksamhetId: id })
 
   if (isLoading) {
