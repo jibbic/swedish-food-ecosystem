@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  neo4j:
+    image: neo4j:5.26-community
+    container_name: foodsystem-neo4j
+    ports:
+      - "7474:7474"  # Browser
+      - "7687:7687"  # Bolt
+    environment:
+      - NEO4J_AUTH=neo4j/foodsystem2026
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+    volumes:
+      - ./neo4j/data:/data
+      - ./neo4j/logs:/logs
+      - ./neo4j/import:/var/lib/neo4j/import
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: foodsystem-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=foodsystem
+      - POSTGRES_USER=foodsystem
+      - POSTGRES_PASSWORD=foodsystem2026
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

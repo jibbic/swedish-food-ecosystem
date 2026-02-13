@@ -1,0 +1,57 @@
+{
+  "name": "swedish-food-ecosystem",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Knowledge graph visualization of Sweden's food industry regulatory ecosystem",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "neo4j:start": "docker compose up -d neo4j",
+    "neo4j:stop": "docker compose down",
+    "seed": "tsx src/lib/seed/index.ts",
+    "data:download": "tsx src/lib/seed/download-external-data.ts",
+    "demo:seed": "cross-env UPPGIFTSKRAV_INCLUDE_ALL=true tsx src/lib/seed/index.ts"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.90.21",
+    "@trpc/client": "^11.10.0",
+    "@trpc/react-query": "^11.10.0",
+    "@trpc/server": "^11.10.0",
+    "clsx": "^2.1.1",
+    "cytoscape": "^3.33.1",
+    "cytoscape-fcose": "^2.2.0",
+    "fast-xml-parser": "^4.5.3",
+    "framer-motion": "^11.11.17",
+    "lucide-react": "^0.460.0",
+    "neo4j-driver": "^5.28.3",
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "recharts": "^2.14.1",
+    "tailwind-merge": "^2.6.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "@types/cytoscape": "^3.21.9",
+    "@types/node": "^22.10.1",
+    "@types/react": "^19.0.1",
+    "@types/react-dom": "^19.0.2",
+    "@typescript-eslint/eslint-plugin": "^8.18.1",
+    "@typescript-eslint/parser": "^8.18.1",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.17.0",
+    "eslint-config-next": "^15.1.0",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}
