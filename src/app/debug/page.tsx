@@ -96,7 +96,42 @@ export default function DebugPage() {
           <div className="flex items-center justify-center py-20">
             <Loader2 className="animate-spin" size={48} />
           </div>
-        ) : overview ? (
+        ) : overview && 'success' in overview && !overview.success ? (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+            <h3 className="font-bold text-red-900 mb-3">❌ Databasanslutning misslyckades</h3>
+            <div className="space-y-3">
+              <div>
+                <strong className="text-red-900">Felmeddelande:</strong>
+                <div className="bg-white p-3 rounded mt-1 font-mono text-sm text-red-800">
+                  {overview.error}
+                </div>
+              </div>
+              {'env' in overview && (
+                <div>
+                  <strong className="text-red-900">Miljövariabler:</strong>
+                  <div className="bg-white p-3 rounded mt-1 font-mono text-xs space-y-1">
+                    {Object.entries(overview.env as Record<string, string>).map(([key, value]) => (
+                      <div key={key}>
+                        <span className="text-gray-600">{key}:</span>{' '}
+                        <span className={value.includes('NOT SET') ? 'text-red-600 font-bold' : 'text-green-600'}>
+                          {value}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="bg-yellow-50 border border-yellow-300 p-4 rounded">
+                <strong className="text-yellow-900">💡 Lösning:</strong>
+                <ol className="list-decimal ml-5 mt-2 space-y-2 text-yellow-900 text-sm">
+                  <li>Kontrollera att <code className="bg-white px-1">.env</code> filen finns i projektmappen</li>
+                  <li>Verifiera innehållet: <code className="bg-white px-1">cat .env</code></li>
+                  <li>Starta om Next.js: Ctrl+C och sedan <code className="bg-white px-1">npm run dev</code></li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        ) : overview && 'totalNodes' in overview ? (
           <>
             {/* Summary */}
             <div className="grid md:grid-cols-2 gap-6 mb-6">
@@ -110,7 +145,7 @@ export default function DebugPage() {
               </div>
             </div>
 
-            {overview.totalNodes === 0 && (
+            {'totalNodes' in overview && overview.totalNodes === 0 && (
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
                 <h3 className="font-bold text-yellow-900 mb-2">⚠️ Databasen är tom!</h3>
                 <p className="text-yellow-800 mb-3">
@@ -128,9 +163,9 @@ export default function DebugPage() {
             {/* Node Counts by Type */}
             <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
               <h2 className="text-xl font-bold mb-4">Noder per typ</h2>
-              {overview.nodeCounts.length === 0 ? (
+              {'nodeCounts' in overview && overview.nodeCounts.length === 0 ? (
                 <p className="text-gray-500">Inga noder hittades</p>
-              ) : (
+              ) : 'nodeCounts' in overview ? (
                 <div className="space-y-3">
                   {overview.nodeCounts.map(({ label, count }) => (
                     <div key={label} className="flex items-center justify-between border-b pb-2">
@@ -141,14 +176,14 @@ export default function DebugPage() {
                     </div>
                   ))}
                 </div>
-              )}
+              ) : null}
             </div>
 
             {/* Sample Data */}
-            {Object.keys(overview.samples).length > 0 && (
+            {'samples' in overview && Object.keys(overview.samples).length > 0 && (
               <div className="space-y-6">
                 <h2 className="text-2xl font-bold">Exempel-data</h2>
-                {Object.entries(overview.samples).map(([label, items]) => (
+                {'samples' in overview && Object.entries(overview.samples).map(([label, items]) => (
                   <div key={label} className="bg-white rounded-xl border border-gray-200 p-6">
                     <h3 className="text-lg font-bold mb-4 text-gray-900">{label}</h3>
                     {Array.isArray(items) && items.length > 0 ? (

@@ -79,51 +79,66 @@ export const appRouter = t.router({
   debug: t.router({
     overview: t.procedure.query(async () => {
       const { getSession } = await import('@/lib/neo4j/client')
-      const session = await getSession()
       
       try {
-        // Count all node types
-        const countResult = await session.run(`
-          MATCH (n)
-          RETURN labels(n)[0] as label, count(*) as count
-          ORDER BY count DESC
-        `)
+        const session = await getSession()
         
-        const nodeCounts = countResult.records.map(record => ({
-          label: record.get('label') as string,
-          count: record.get('count').toNumber(),
-        }))
-
-        // Get total counts
-        const totalResult = await session.run(`
-          MATCH (n) RETURN count(n) as totalNodes
-        `)
-        const totalNodes = totalResult.records[0]?.get('totalNodes').toNumber() || 0
-
-        const relResult = await session.run(`
-          MATCH ()-[r]->() RETURN count(r) as totalRels
-        `)
-        const totalRels = relResult.records[0]?.get('totalRels').toNumber() || 0
-
-        // Sample data from each type
-        const samples: Record<string, unknown[]> = {}
-        for (const { label } of nodeCounts.slice(0, 5)) {
-          const sampleResult = await session.run(`
-            MATCH (n:${label})
-            RETURN n
-            LIMIT 5
+        try {
+          // Count all node types
+          const countResult = await session.run(`
+            MATCH (n)
+            RETURN labels(n)[0] as label, count(*) as count
+            ORDER BY count DESC
           `)
-          samples[label] = sampleResult.records.map(r => r.get('n').properties)
-        }
+          
+          const nodeCounts = countResult.records.map(record => ({
+            label: record.get('label') as string,
+            count: record.get('count').toNumber(),
+          }))
 
-        return {
-          totalNodes,
-          totalRels,
-          nodeCounts,
-          samples,
+          // Get total counts
+          const totalResult = await session.run(`
+            MATCH (n) RETURN count(n) as totalNodes
+          `)
+          const totalNodes = totalResult.records[0]?.get('totalNodes').toNumber() || 0
+
+          const relResult = await session.run(`
+            MATCH ()-[r]->() RETURN count(r) as totalRels
+          `)
+          const totalRels = relResult.records[0]?.get('totalRels').toNumber() || 0
+
+          // Sample data from each type
+          const samples: Record<string, unknown[]> = {}
+          for (const { label } of nodeCounts.slice(0, 5)) {
+            const sampleResult = await session.run(`
+              MATCH (n:${label})
+              RETURN n
+              LIMIT 5
+            `)
+            samples[label] = sampleResult.records.map(r => r.get('n').properties)
+          }
+
+          return {
+            success: true,
+            totalNodes,
+            totalRels,
+            nodeCounts,
+            samples,
+          }
+        } finally {
+          await session.close()
         }
-      } finally {
-        await session.close()
+      } catch (error) {
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          env: {
+            NEO4J_URI: process.env.NEO4J_URI || 'NOT SET',
+            NEO4J_USER: process.env.NEO4J_USER || 'NOT SET',
+            NEO4J_PASSWORD: process.env.NEO4J_PASSWORD ? '***SET***' : 'NOT SET',
+            NODE_ENV: process.env.NODE_ENV,
+          }
+        }
       }
     }),
   }),
