@@ -5,6 +5,7 @@
   "description": "Knowledge graph visualization of Sweden's food industry regulatory ecosystem",
   "scripts": {
     "dev": "next dev",
+    "dev:port": "next dev -p 3001",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -14,7 +15,8 @@
     "neo4j:test": "node test-neo4j.js",
     "seed": "tsx src/lib/seed/index.ts",
     "data:download": "tsx src/lib/seed/download-external-data.ts",
-    "demo:seed": "cross-env UPPGIFTSKRAV_INCLUDE_ALL=true tsx src/lib/seed/index.ts"
+    "demo:seed": "cross-env UPPGIFTSKRAV_INCLUDE_ALL=true tsx src/lib/seed/index.ts",
+    "clean": "killall -9 node 2>/dev/null || true"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.21",
