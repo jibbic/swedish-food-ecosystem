@@ -2,6 +2,28 @@ import { getNeo4jDriver } from '../neo4j/client'
 import { fetchUppgiftskrav } from '../parsers/uppgiftskrav'
 import { fetchVerksamhetstyper } from '../parsers/livsmedelsverket'
 
+// Wait for Neo4j to be ready with retry logic
+async function waitForNeo4j(maxRetries = 10, delayMs = 3000): Promise<void> {
+  const driver = getNeo4jDriver()
+  
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      console.log(`🔍 Checking Neo4j connection (attempt ${i + 1}/${maxRetries})...`)
+      const session = driver.session()
+      await session.run('RETURN 1')
+      await session.close()
+      console.log('✅ Neo4j is ready!\n')
+      return
+    } catch (error) {
+      if (i === maxRetries - 1) {
+        throw new Error(`Neo4j not ready after ${maxRetries} attempts`)
+      }
+      console.log(`⏳ Neo4j not ready, waiting ${delayMs / 1000}s...`)
+      await new Promise(resolve => setTimeout(resolve, delayMs))
+    }
+  }
+}
+
 async function setupConstraints() {
   const driver = getNeo4jDriver()
   const session = driver.session()
@@ -202,6 +224,9 @@ export async function seedDatabase() {
   console.log('🌱 Starting database seeding...\n')
 
   try {
+    // Wait for Neo4j to be ready
+    await waitForNeo4j()
+    
     await setupConstraints()
     await clearDatabase()
     await seedVerksamhetstyper()
