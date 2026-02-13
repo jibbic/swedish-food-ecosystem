@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import cytoscape, { Core, NodeSingular } from 'cytoscape'
+import { useEffect, useRef, useState } from 'react'
+import cytoscape, { Core, NodeSingular, EdgeSingular } from 'cytoscape'
 import fcose from 'cytoscape-fcose'
 import type { GraphData } from '@/types/neo4j'
 
@@ -18,6 +18,13 @@ interface EcosystemGraphProps {
 export function EcosystemGraph({ data, onNodeClick }: EcosystemGraphProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const cyRef = useRef<Core | null>(null)
+  const [selectedNode, setSelectedNode] = useState<string | null>(null)
+  const [tooltip, setTooltip] = useState<{ visible: boolean; content: string; x: number; y: number }>({
+    visible: false,
+    content: '',
+    x: 0,
+    y: 0,
+  })
 
   useEffect(() => {
     if (!containerRef.current || !data) return
@@ -63,29 +70,63 @@ export function EcosystemGraph({ data, onNodeClick }: EcosystemGraphProps) {
         {
           selector: 'node',
           style: {
+            'shape': 'roundrectangle',
             'background-color': (ele: NodeSingular) => {
               const type = ele.data('type') as keyof typeof nodeColors
               return nodeColors[type] || '#94a3b8'
             },
-            'label': 'data(label)',
-            'color': '#1f2937',
+            'background-opacity': 0.95,
+            'border-width': 2,
+            'border-color': (ele: NodeSingular) => {
+              const type = ele.data('type') as keyof typeof nodeColors
+              const baseColor = nodeColors[type] || '#94a3b8'
+              // Darker border
+              return baseColor.replace(/[0-9a-f]{6}$/, (m) => 
+                parseInt(m, 16).toString(16).padStart(6, '0').substring(0, 6)
+              )
+            },
+            'label': (ele: NodeSingular) => {
+              const type = ele.data('type')
+              const namn = ele.data('namn') || ele.data('label')
+              if (type === 'Verksamhetstyp') {
+                const kod = ele.data('kod') || ''
+                const risk = ele.data('riskKlass') || ''
+                return `${kod}\n${namn}\n[Risk: ${risk}]`
+              }
+              if (type === 'Uppgiftskrav') {
+                const lagrum = ele.data('lagrum') || ''
+                const short = lagrum.split(' ').slice(0, 3).join(' ')
+                return `${namn}\n${short}...`
+              }
+              return namn
+            },
+            'color': '#ffffff',
             'text-valign': 'center',
             'text-halign': 'center',
-            'font-size': '12px',
+            'font-size': '11px',
             'font-weight': '600',
             'text-wrap': 'wrap',
-            'text-max-width': '100px',
+            'text-max-width': '120px',
+            'text-background-color': (ele: NodeSingular) => {
+              const type = ele.data('type') as keyof typeof nodeColors
+              return nodeColors[type] || '#94a3b8'
+            },
+            'text-background-opacity': 0.8,
+            'text-background-padding': '4px',
+            'text-background-shape': 'roundrectangle',
             'width': (ele: NodeSingular) => {
               const type = ele.data('type')
-              if (type === 'Myndighet') return 50
-              if (type === 'Verksamhetstyp') return 45
-              return 40
+              if (type === 'Myndighet') return 100
+              if (type === 'Verksamhetstyp') return 120
+              if (type === 'Uppgiftskrav') return 140
+              return 80
             },
             'height': (ele: NodeSingular) => {
               const type = ele.data('type')
-              if (type === 'Myndighet') return 50
-              if (type === 'Verksamhetstyp') return 45
-              return 40
+              if (type === 'Myndighet') return 60
+              if (type === 'Verksamhetstyp') return 70
+              if (type === 'Uppgiftskrav') return 80
+              return 50
             },
           },
         },
@@ -94,17 +135,28 @@ export function EcosystemGraph({ data, onNodeClick }: EcosystemGraphProps) {
           style: {
             'border-width': 4,
             'border-color': '#1e40af',
+            'border-style': 'solid',
+            'overlay-opacity': 0.2,
+            'overlay-color': '#1e40af',
           },
         },
         {
           selector: 'edge',
           style: {
-            'width': 2,
+            'width': 3,
             'line-color': '#cbd5e1',
             'target-arrow-color': '#cbd5e1',
             'target-arrow-shape': 'triangle',
             'curve-style': 'bezier',
-            'arrow-scale': 1.5,
+            'arrow-scale': 1.8,
+            'label': (ele: EdgeSingular) => ele.data('type'),
+            'font-size': '10px',
+            'text-rotation': 'autorotate',
+            'text-margin-y': -10,
+            'color': '#6b7280',
+            'text-background-color': '#ffffff',
+            'text-background-opacity': 0.9,
+            'text-background-padding': '3px',
           },
         },
         {
@@ -112,6 +164,8 @@ export function EcosystemGraph({ data, onNodeClick }: EcosystemGraphProps) {
           style: {
             'line-color': '#f97316',
             'target-arrow-color': '#f97316',
+            'line-style': 'solid',
+            'width': 3,
           },
         },
         {
@@ -119,6 +173,8 @@ export function EcosystemGraph({ data, onNodeClick }: EcosystemGraphProps) {
           style: {
             'line-color': '#2563eb',
             'target-arrow-color': '#2563eb',
+            'line-style': 'dashed',
+            'width': 2.5,
           },
         },
         {
@@ -150,6 +206,37 @@ export function EcosystemGraph({ data, onNodeClick }: EcosystemGraphProps) {
       },
       minZoom: 0.3,
       maxZoom: 3,
+    })
+
+    // Mouse hover for tooltips
+    cy.on('mouseover', 'node', (event) => {
+      const node = event.target
+      const type = node.data('type')
+      let content = `<strong>${node.data('namn') || node.data('label')}</strong><br/>`
+      
+      if (type === 'Verksamhetstyp') {
+        content += `Kod: ${node.data('kod') || 'N/A'}<br/>`
+        content += `Riskklass: ${node.data('riskKlass') || 'N/A'}<br/>`
+        content += `Beskrivning: ${(node.data('beskrivning') || '').substring(0, 80)}...`
+      } else if (type === 'Uppgiftskrav') {
+        content += `Lagrum: ${node.data('lagrum') || 'N/A'}<br/>`
+        content += `Beskrivning: ${(node.data('beskrivning') || '').substring(0, 100)}...`
+      } else if (type === 'Myndighet') {
+        content += `Typ: ${node.data('typ') || 'N/A'}<br/>`
+        content += `Ansvar: ${(node.data('ansvar') || '').substring(0, 80)}...`
+      }
+      
+      const position = node.renderedPosition()
+      setTooltip({
+        visible: true,
+        content,
+        x: position.x,
+        y: position.y - 40,
+      })
+    })
+
+    cy.on('mouseout', 'node', () => {
+      setTooltip({ visible: false, content: '', x: 0, y: 0 })
     })
 
     // Click handler
@@ -199,9 +286,112 @@ export function EcosystemGraph({ data, onNodeClick }: EcosystemGraphProps) {
     <div className="relative w-full h-full">
       <div
         ref={containerRef}
-        className="w-full h-full bg-gray-50 rounded-lg border border-gray-200"
+        className="w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200 shadow-inner"
         style={{ minHeight: '600px' }}
       />
+      
+      {/* Tooltip */}
+      {tooltip.visible && (
+        <div
+          className="absolute pointer-events-none bg-gray-900 text-white text-xs rounded-lg px-3 py-2 shadow-xl max-w-xs z-50"
+          style={{
+            left: `${tooltip.x}px`,
+            top: `${tooltip.y}px`,
+            transform: 'translate(-50%, -100%)',
+          }}
+          dangerouslySetInnerHTML={{ __html: tooltip.content }}
+        />
+      )}
+
+      {/* Selected Node Details Panel */}
+      {selectedNode && data.nodes.find(n => n.id === selectedNode) && (
+        <div className="absolute left-4 top-4 bg-white border-2 border-blue-500 rounded-lg p-4 shadow-xl max-w-sm z-40">
+          {(() => {
+            const node = data.nodes.find(n => n.id === selectedNode)!
+            const type = node.type
+            return (
+              <>
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ 
+                        backgroundColor: type === 'Verksamhetstyp' ? '#10b981' : 
+                                        type === 'Uppgiftskrav' ? '#f97316' : 
+                                        type === 'Myndighet' ? '#2563eb' : '#94a3b8' 
+                      }} 
+                    />
+                    <span className="text-xs font-semibold text-gray-600">{type}</span>
+                  </div>
+                  <button 
+                    onClick={() => setSelectedNode(null)} 
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <h3 className="font-bold text-lg mb-2">{node.properties.namn || node.label}</h3>
+                <div className="space-y-2 text-sm">
+                  {type === 'Verksamhetstyp' && (
+                    <>
+                      <div><strong>Kod:</strong> {node.properties.kod}</div>
+                      <div><strong>Riskklass:</strong> {node.properties.riskKlass}/5</div>
+                      <div><strong>Kategori:</strong> {node.properties.kategori}</div>
+                      <div><strong>Beskrivning:</strong> {node.properties.beskrivning}</div>
+                      <div className="pt-2 border-t">
+                        <span className="text-xs">
+                          {node.properties.kräverGodkännande ? '✓ Kräver godkännande' : '✓ Kräver registrering'}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                  {type === 'Uppgiftskrav' && (
+                    <>
+                      <div><strong>Lagrum:</strong> {node.properties.lagrum}</div>
+                      <div><strong>Beskrivning:</strong> {node.properties.beskrivning}</div>
+                      <div><strong>Områden:</strong> {Array.isArray(node.properties.verksamhetsområde) ? node.properties.verksamhetsområde.join(', ') : node.properties.verksamhetsområde}</div>
+                      {node.properties.url && (
+                        <a 
+                          href={node.properties.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline text-xs"
+                        >
+                          Läs mer →
+                        </a>
+                      )}
+                    </>
+                  )}
+                  {type === 'Myndighet' && (
+                    <>
+                      <div><strong>Typ:</strong> {node.properties.typ}</div>
+                      <div><strong>Ansvar:</strong> {node.properties.ansvar}</div>
+                      <div><strong>Sektor:</strong> {Array.isArray(node.properties.sektor) ? node.properties.sektor.join(', ') : node.properties.sektor}</div>
+                      {node.properties.kontakt && typeof node.properties.kontakt === 'string' && (() => {
+                        try {
+                          const kontakt = JSON.parse(node.properties.kontakt)
+                          return kontakt.url && (
+                            <a 
+                              href={kontakt.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:underline text-xs"
+                            >
+                              Besök webbplats →
+                            </a>
+                          )
+                        } catch {
+                          return null
+                        }
+                      })()}
+                    </>
+                  )}
+                </div>
+              </>
+            )
+          })()}
+        </div>
+      )}
       
       {/* Controls */}
       <div className="absolute bottom-4 right-4 flex flex-col gap-2">
@@ -236,19 +426,42 @@ export function EcosystemGraph({ data, onNodeClick }: EcosystemGraphProps) {
 
       {/* Legend */}
       <div className="absolute top-4 right-4 bg-white border border-gray-300 rounded-lg p-4 shadow-lg">
-        <h3 className="font-semibold text-sm mb-2">Nodtyper</h3>
+        <h3 className="font-bold text-sm mb-3 text-gray-800">Nodtyper</h3>
         <div className="space-y-2 text-xs">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-verksamhet"></div>
-            <span>Verksamhetstyp</span>
+            <div className="w-5 h-5 rounded bg-[#10b981] border-2 border-[#059669]"></div>
+            <span className="text-gray-700">Verksamhetstyp</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-uppgiftskrav"></div>
-            <span>Uppgiftskrav</span>
+            <div className="w-5 h-5 rounded bg-[#f97316] border-2 border-[#ea580c]"></div>
+            <span className="text-gray-700">Uppgiftskrav</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-myndighet"></div>
-            <span>Myndighet</span>
+            <div className="w-5 h-5 rounded bg-[#2563eb] border-2 border-[#1d4ed8]"></div>
+            <span className="text-gray-700">Myndighet</span>
+          </div>
+        </div>
+        <div className="mt-4 pt-3 border-t border-gray-200">
+          <h4 className="font-semibold text-xs mb-2 text-gray-800">Relationer</h4>
+          <div className="space-y-2 text-xs">
+            <div className="flex items-center gap-2">
+              <svg width="24" height="2" className="flex-shrink-0">
+                <line x1="0" y1="1" x2="24" y2="1" stroke="#f97316" strokeWidth="3" />
+              </svg>
+              <span className="text-gray-700">Måste uppfylla</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg width="24" height="2" className="flex-shrink-0">
+                <line x1="0" y1="1" x2="24" y2="1" stroke="#2563eb" strokeWidth="2.5" strokeDasharray="4" />
+              </svg>
+              <span className="text-gray-700">Ställs av</span>
+            </div>
+          </div>
+        </div>
+        <div className="mt-3 pt-3 border-t border-gray-200 text-xs text-gray-600">
+          <div className="flex items-start gap-1">
+            <span>💡</span>
+            <span>Klicka på noder för detaljer. Dra för att flytta.</span>
           </div>
         </div>
       </div>
