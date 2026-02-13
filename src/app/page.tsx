@@ -28,6 +28,9 @@ export default function HomePage() {
               <Link href="/overlapp" className="text-gray-700 hover:text-blue-600 transition">
                 Överlapp
               </Link>
+              <Link href="/debug" className="text-gray-500 hover:text-blue-600 transition text-xs">
+                Debug
+              </Link>
             </nav>
           </div>
         </div>
