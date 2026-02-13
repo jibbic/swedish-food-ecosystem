@@ -43,20 +43,50 @@ export default function DebugPage() {
           {healthLoading ? (
             <Loader2 className="animate-spin" />
           ) : (
-            <div className="flex items-center gap-3">
-              {health?.status === 'ok' ? (
-                <>
-                  <CheckCircle className="text-green-600" size={24} />
-                  <span className="text-green-600 font-semibold">Neo4j ansluten</span>
-                </>
-              ) : (
-                <>
-                  <XCircle className="text-red-600" size={24} />
-                  <span className="text-red-600 font-semibold">Neo4j ej ansluten</span>
-                  <span className="text-gray-600 text-sm ml-4">
-                    Kontrollera att Docker containers körs: <code className="bg-gray-100 px-2 py-1 rounded">docker ps</code>
-                  </span>
-                </>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                {health?.status === 'ok' ? (
+                  <>
+                    <CheckCircle className="text-green-600" size={24} />
+                    <span className="text-green-600 font-semibold">Neo4j ansluten</span>
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="text-red-600" size={24} />
+                    <span className="text-red-600 font-semibold">Neo4j ej ansluten</span>
+                  </>
+                )}
+              </div>
+              
+              {health?.status === 'ok' && (
+                <div className="bg-green-50 p-4 rounded-lg text-sm space-y-1">
+                  <div><strong>Version:</strong> {health.neo4jVersion}</div>
+                  <div><strong>Address:</strong> {health.address}</div>
+                  <div><strong>Timestamp:</strong> {new Date(health.timestamp).toLocaleString('sv-SE')}</div>
+                </div>
+              )}
+              
+              {health?.status === 'error' && (
+                <div className="bg-red-50 p-4 rounded-lg text-sm space-y-2">
+                  {health.error && (
+                    <div>
+                      <strong className="text-red-900">Fel:</strong>
+                      <div className="text-red-800 font-mono mt-1">{health.error}</div>
+                    </div>
+                  )}
+                  {health.hint && (
+                    <div className="text-red-800">💡 {health.hint}</div>
+                  )}
+                  <div className="mt-3 pt-3 border-t border-red-200">
+                    <strong className="text-red-900">Felsökning:</strong>
+                    <ol className="list-decimal ml-5 mt-2 space-y-1 text-red-800">
+                      <li>Kontrollera att Neo4j körs: <code className="bg-white px-2 py-1 rounded">docker ps</code></li>
+                      <li>Vänta 20 sekunder och klicka Uppdatera (Neo4j tar tid att starta)</li>
+                      <li>Kontrollera lösenordet i .env filen (NEO4J_PASSWORD)</li>
+                      <li>Se Neo4j-loggar: <code className="bg-white px-2 py-1 rounded">docker logs foodsystem-neo4j --tail 50</code></li>
+                    </ol>
+                  </div>
+                </div>
               )}
             </div>
           )}

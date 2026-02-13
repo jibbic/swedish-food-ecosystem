@@ -11,6 +11,7 @@
     "type-check": "tsc --noEmit",
     "neo4j:start": "docker compose up -d neo4j",
     "neo4j:stop": "docker compose down",
+    "neo4j:test": "node test-neo4j.js",
     "seed": "tsx src/lib/seed/index.ts",
     "data:download": "tsx src/lib/seed/download-external-data.ts",
     "demo:seed": "cross-env UPPGIFTSKRAV_INCLUDE_ALL=true tsx src/lib/seed/index.ts"

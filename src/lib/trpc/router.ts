@@ -54,9 +54,25 @@ export const appRouter = t.router({
 
   // Health check
   health: t.procedure.query(async () => {
-    const { testConnection } = await import('@/lib/neo4j/client')
-    const isHealthy = await testConnection()
-    return { status: isHealthy ? 'ok' : 'error', timestamp: new Date().toISOString() }
+    const { testConnection, getNeo4jDriver } = await import('@/lib/neo4j/client')
+    try {
+      const isHealthy = await testConnection()
+      const driver = getNeo4jDriver()
+      const serverInfo = await driver.getServerInfo()
+      return { 
+        status: isHealthy ? 'ok' : 'error', 
+        timestamp: new Date().toISOString(),
+        neo4jVersion: serverInfo.agent,
+        address: serverInfo.address,
+      }
+    } catch (error) {
+      return { 
+        status: 'error', 
+        timestamp: new Date().toISOString(),
+        error: error instanceof Error ? error.message : 'Unknown error',
+        hint: 'Kontrollera att Neo4j är igång och att lösenordet är korrekt'
+      }
+    }
   }),
 
   // Debug: Get database overview
