@@ -7,14 +7,27 @@
  */
 
 import neo4j from 'neo4j-driver'
-import { config } from 'dotenv'
+import { readFileSync } from 'fs'
+import { join } from 'path'
 
-// Load .env file
-config()
+// Read .env file manually (no external deps needed)
+let envVars = {}
+try {
+  const envPath = join(process.cwd(), '.env')
+  const envContent = readFileSync(envPath, 'utf-8')
+  envContent.split('\n').forEach(line => {
+    const match = line.match(/^([^#=]+)=(.*)$/)
+    if (match) {
+      envVars[match[1].trim()] = match[2].trim()
+    }
+  })
+} catch (error) {
+  console.log('⚠️  No .env file found, using defaults\n')
+}
 
-const uri = process.env.NEO4J_URI || 'bolt://localhost:7687'
-const user = process.env.NEO4J_USER || 'neo4j'
-const password = process.env.NEO4J_PASSWORD || 'foodsystem2026'
+const uri = process.env.NEO4J_URI || envVars.NEO4J_URI || 'bolt://localhost:7687'
+const user = process.env.NEO4J_USER || envVars.NEO4J_USER || 'neo4j'
+const password = process.env.NEO4J_PASSWORD || envVars.NEO4J_PASSWORD || 'foodsystem2026'
 
 console.log('🔍 Testing Neo4j Connection...\n')
 console.log(`URI: ${uri}`)
