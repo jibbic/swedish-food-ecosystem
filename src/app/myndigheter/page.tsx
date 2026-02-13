@@ -18,7 +18,7 @@ export default function MyndigheterPage() {
     const matchesType = !tipFilter || m.typ === tipFilter
     const matchesSearch = !searchQuery || 
       m.namn.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.beskrivning?.toLowerCase().includes(searchQuery.toLowerCase())
+      m.ansvar.toLowerCase().includes(searchQuery.toLowerCase())
     return matchesType && matchesSearch
   })
 
@@ -119,7 +119,7 @@ export default function MyndigheterPage() {
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredMyndigheter.map(myndighet => {
-                const kontakt = myndighet.kontakt ? JSON.parse(myndighet.kontakt) : null
+                const kontakt = myndighet.kontakt
 
                 return (
                   <Card key={myndighet.id} className="hover:shadow-lg transition-shadow">
