@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { trpc } from '@/lib/trpc/client'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Loader2, Globe, Mail, Phone, Search, Filter } from 'lucide-react'
+import { Loader2, Globe, Mail, Phone, Search } from 'lucide-react'
 
 export default function MyndigheterPage() {
   const [tipFilter, setTipFilter] = useState<string>('')

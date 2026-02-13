@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { trpc } from '@/lib/trpc/client'
 import { EcosystemGraph } from '@/components/graph/EcosystemGraph'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Loader2, Filter, Search, X } from 'lucide-react'
 

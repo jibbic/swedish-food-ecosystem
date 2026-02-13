@@ -79,6 +79,7 @@ export interface GraphNode {
   id: string
   label: string
   type: 'Verksamhetstyp' | 'Uppgiftskrav' | 'Myndighet' | 'Register' | 'Lag'
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   properties: Record<string, any>
 }
 
@@ -86,6 +87,7 @@ export interface GraphEdge {
   source: string
   target: string
   type: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   properties?: Record<string, any>
 }
 

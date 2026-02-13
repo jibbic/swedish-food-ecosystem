@@ -10,7 +10,7 @@ interface LivsmedelsverketVerksamhet {
 
 export async function fetchVerksamhetstyper(): Promise<Verksamhetstyp[]> {
   // TODO: Replace with actual API endpoint when available
-  const apiUrl = process.env.LIVSMEDELSVERKET_API_URL || 'https://dataportal.livsmedelsverket.se/riskklassningkodverk/api'
+  // const apiUrl = process.env.LIVSMEDELSVERKET_API_URL || 'https://dataportal.livsmedelsverket.se/riskklassningkodverk/api'
   
   console.log('📥 Fetching verksamhetstyper från Livsmedelsverket API')
   

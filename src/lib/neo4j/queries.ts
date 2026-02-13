@@ -74,6 +74,7 @@ export async function getEcosystemGraph(filters?: {
   const session = await getSession()
   try {
     let whereClause = ''
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const params: Record<string, any> = {}
 
     if (filters?.kategori) {
@@ -176,7 +177,7 @@ export async function searchNodes(query: string): Promise<GraphData['nodes']> {
         properties: node.properties,
       }
     })
-  } catch (error) {
+  } catch {
     // Fulltext index might not exist yet, fallback to simple match
     const result = await session.run(`
       MATCH (n)

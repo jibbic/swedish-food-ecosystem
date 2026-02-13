@@ -53,7 +53,7 @@ export default function HomePage() {
               <ArrowRight size={20} />
             </Link>
             <Link 
-              href="/ekosystemet" 
+              href="/ekosystem" 
               className="px-8 py-4 border-2 border-blue-600 text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition"
             >
               Utforska grafen

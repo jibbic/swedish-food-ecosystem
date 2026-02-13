@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import cytoscape, { Core, NodeSingular, EdgeSingular } from 'cytoscape'
+import cytoscape, { Core, NodeSingular } from 'cytoscape'
 import fcose from 'cytoscape-fcose'
 import type { GraphData } from '@/types/neo4j'
 
@@ -18,7 +18,6 @@ interface EcosystemGraphProps {
 export function EcosystemGraph({ data, onNodeClick }: EcosystemGraphProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const cyRef = useRef<Core | null>(null)
-  const [selectedNode, setSelectedNode] = useState<string | null>(null)
 
   useEffect(() => {
     if (!containerRef.current || !data) return
