@@ -228,7 +228,7 @@ export default function EkosystemPage() {
                         <div>
                           <span className="font-medium">Webb:</span>{' '}
                           <a
-                            href={JSON.parse(selectedNode.properties.kontakt).url}
+                            href={selectedNode.properties.kontakt.url}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 hover:underline"
