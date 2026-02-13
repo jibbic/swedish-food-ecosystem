@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import cytoscape, { Core, NodeSingular } from 'cytoscape'
 import fcose from 'cytoscape-fcose'
 import type { GraphData } from '@/types/neo4j'
