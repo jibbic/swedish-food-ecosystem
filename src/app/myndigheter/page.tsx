@@ -137,9 +137,9 @@ export default function MyndigheterPage() {
                       <CardTitle className="text-xl">{myndighet.namn}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      {myndighet.beskrivning && (
+                      {myndighet.ansvar && (
                         <p className="text-sm text-gray-600 line-clamp-3">
-                          {myndighet.beskrivning}
+                          {myndighet.ansvar}
                         </p>
                       )}
 
