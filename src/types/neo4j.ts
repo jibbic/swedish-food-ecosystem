@@ -19,6 +19,7 @@ export interface Uppgiftskrav {
   beskrivning: string
   lagrum: string
   verksamhetsområde: string[]
+  myndighetNamn: string  // Ansvarig myndighet
   deadline?: string
   återkommande: boolean
   url: string

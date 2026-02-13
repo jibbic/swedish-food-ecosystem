@@ -139,6 +139,7 @@ function transformXmlToDomain(xmlData: string): { uppgiftskrav: Uppgiftskrav[]; 
     beskrivning: item.beskrivning,
     lagrum: item.lagrum,
     verksamhetsområde: item.verksamhetsområde,
+    myndighetNamn: item.myndighetNamn, // Spara myndighetnamn!
     deadline: undefined,
     återkommande: false,
     url: item.url,

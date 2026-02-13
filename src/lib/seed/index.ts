@@ -138,6 +138,7 @@ async function seedUppgiftskravOchMyndigheter() {
           beskrivning: $beskrivning,
           lagrum: $lagrum,
           verksamhetsområde: $verksamhetsområde,
+          myndighetNamn: $myndighetNamn,
           deadline: $deadline,
           återkommande: $återkommande,
           url: $url,
@@ -180,14 +181,13 @@ async function createRelationships() {
 
     console.log(`✅ Created ${result1.records[0]?.get('count').toNumber() || 0} MÅSTE_UPPFYLLA relationships`)
 
-    // Connect uppgiftskrav to myndigheter
-    // Match based on myndighet name in uppgiftskrav description or create generic connections
+    // Connect uppgiftskrav to their specific responsible myndighet
+    // Match on myndighet name (stored in uppgiftskrav.myndighetNamn)
     const result2 = await session.run(`
       MATCH (k:Uppgiftskrav), (m:Myndighet)
-      WHERE m.sektor = ['Livsmedel'] OR 'Livsmedel' IN m.sektor
+      WHERE k.myndighetNamn = m.namn
       CREATE (k)-[:STÄLLS_AV {kontrollfrekvens: 'Vid ansökan'}]->(m)
       RETURN count(*) as count
-      LIMIT 100
     `)
 
     console.log(`✅ Created ${result2.records[0]?.get('count').toNumber() || 0} STÄLLS_AV relationships`)
